@@ -1,0 +1,104 @@
+{
+  "Comment": "Exemplo de orquestração: valida, processa, persiste e notifica",
+  "StartAt": "ValidateInput",
+  "States": {
+    "ValidateInput": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${ValidateInputLambda}",
+        "Payload.$": "$"
+      },
+      "ResultPath": "$.validation",
+      "Next": "IsValid"
+    },
+    "IsValid": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.validation.Payload.isValid",
+          "BooleanEquals": true,
+          "Next": "ParallelProcessing"
+        }
+      ],
+      "Default": "InvalidInput"
+    },
+    "InvalidInput": {
+      "Type": "Fail",
+      "Error": "ValidationError",
+      "Cause": "Input inválido"
+    },
+    "ParallelProcessing": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "ProcessItem",
+          "States": {
+            "ProcessItem": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::lambda:invoke",
+              "Parameters": {
+                "FunctionName": "${ProcessItemLambda}",
+                "Payload.$": "$"
+              },
+              "ResultPath": "$.process",
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "Lambda.ServiceException",
+                    "Lambda.AWSLambdaException",
+                    "Lambda.SdkClientException"
+                  ],
+                  "IntervalSeconds": 2,
+                  "MaxAttempts": 3,
+                  "BackoffRate": 2
+                }
+              ],
+              "Catch": [
+                {
+                  "ErrorEquals": ["States.ALL"],
+                  "ResultPath": "$.error",
+                  "Next": "HandleProcessError"
+                }
+              ],
+              "End": true
+            },
+            "HandleProcessError": {
+              "Type": "Pass",
+              "Result": { "handled": true },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "PersistDDB",
+          "States": {
+            "PersistDDB": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::dynamodb:putItem",
+              "Parameters": {
+                "TableName": "${TableName}",
+                "Item": {
+                  "id": { "S.$": "$.validation.Payload.requestId" },
+                  "status": { "S": "PROCESSED" },
+                  "ts": { "S.$": "$$.State.EnteredTime" }
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ],
+      "Next": "NotifyUser"
+    },
+    "NotifyUser": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "${SnsTopicArn}",
+        "Message.$": "States.JsonToString($)"
+      },
+      "End": true
+    }
+  }
+}
