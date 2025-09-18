@@ -1,7 +1,32 @@
 # AWS Step Functions – Lab DIO (Workflow: validar → processar → persistir → notificar)
 
-**Autora:** Fiama  
-**Curso:** Gestão de T.I. (Anhanguera) • **Empresa:** Contrei (Auxiliar de Contratos)  
+## 🏷️ Badges do Projeto
+<p align="left">
+  <a href="https://github.com/fiamaribeiro/dio-aws-stepfunctions-lab-fiama/actions/workflows/ci.yml">
+    <img alt="CI" src="https://github.com/fiamaribeiro/dio-aws-stepfunctions-lab-fiama/actions/workflows/ci.yml/badge.svg">
+  </a>
+  <a href="https://github.com/fiamaribeiro/dio-aws-stepfunctions-lab-fiama/blob/main/LICENSE">
+    <img alt="License" src="https://img.shields.io/github/license/fiamaribeiro/dio-aws-stepfunctions-lab-fiama?label=license&color=0E7C7B">
+  </a>
+  <a href="https://github.com/fiamaribeiro/dio-aws-stepfunctions-lab-fiama/stargazers">
+    <img alt="Stars" src="https://img.shields.io/github/stars/fiamaribeiro/dio-aws-stepfunctions-lab-fiama?style=social">
+  </a>
+  <a href="https://github.com/fiamaribeiro/dio-aws-stepfunctions-lab-fiama/network/members">
+    <img alt="Forks" src="https://img.shields.io/github/forks/fiamaribeiro/dio-aws-stepfunctions-lab-fiama?style=social">
+  </a>
+  <a href="https://github.com/fiamaribeiro/dio-aws-stepfunctions-lab-fiama/issues">
+    <img alt="Issues" src="https://img.shields.io/github/issues/fiamaribeiro/dio-aws-stepfunctions-lab-fiama?color=E67E22">
+  </a>
+  <a href="https://github.com/fiamaribeiro/dio-aws-stepfunctions-lab-fiama/pulls">
+    <img alt="PRs" src="https://img.shields.io/github/issues-pr/fiamaribeiro/dio-aws-stepfunctions-lab-fiama?color=8E44AD">
+  </a>
+  <img alt="Last Commit" src="https://img.shields.io/github/last-commit/fiamaribeiro/dio-aws-stepfunctions-lab-fiama?color=2C3E50">
+</p>
+
+
+## 👩‍💻 Autora
+**Fiama Ribeiro**  
+Estudante de Gestão de TI • Bootcamp DIO • Entusiasta de Cloud Computing ☁️    
 
 Este repositório consolida meu laboratório de **orquestração serverless** com **AWS Step Functions**, integrando **AWS Lambda**, **DynamoDB** e **SNS**. O fluxo valida a entrada, processa dados em paralelo, persiste no banco e envia uma notificação no final.
 
@@ -239,12 +264,6 @@ Execute o PowerShell **como Administrador**  . Se necessário, crie o arquivo:
 New-Item -ItemType Directory -Path "$env:APPDATA\AWS SAM" -Force | Out-Null
 '{}' | Out-File "$env:APPDATA\AWS SAM\metadata.json" -Encoding utf8
 ```
----
-
-## 👩‍💻 Autora
-**Fiama Ribeiro**  
-Estudante de Gestão de TI • Bootcamp DIO • Entusiasta de Cloud Computing ☁️  
-
 ---
 
 ## 🧾 Licença
