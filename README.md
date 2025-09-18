@@ -245,5 +245,11 @@ New-Item -ItemType Directory -Path "$env:APPDATA\AWS SAM" -Force | Out-Null
 **Fiama Ribeiro**  
 Estudante de Gestão de TI • Bootcamp DIO • Entusiasta de Cloud Computing ☁️  
 
+---
+
+## 🧾 Licença
+Distribuído sob a licença **MIT**. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+> Observação: este projeto é educacional (DIO). Custos mínimos podem ocorrer na AWS (ex.: DynamoDB/SNS). Lembre-se de **excluir os recursos** após os testes se não for manter.
 
 
