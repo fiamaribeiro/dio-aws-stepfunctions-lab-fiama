@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  validate-asl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node (18.x)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Ensure jq is available
+        run: |
+          if ! command -v jq > /dev/null; then
+            sudo apt-get update && sudo apt-get install -y jq
+          fi
+
+      - name: Basic JSON syntax check (jq)
+        run: |
+          jq -e . state-machines/example.asl.json > /dev/null
+
+      - name: Custom ASL validator (Node)
+        run: |
+          node .github/scripts/validate-asl.js
