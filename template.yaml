@@ -1,0 +1,118 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Lab DIO – Step Functions (validar → processar → persistir → notificar)
+
+Globals:
+  Function:
+    Runtime: nodejs18.x
+    Timeout: 6
+    MemorySize: 128
+    Architectures: [ x86_64 ]
+
+Parameters:
+  TableNameParam:
+    Type: String
+    Default: dio-lab-items
+    Description: Nome da tabela DynamoDB
+  TopicNameParam:
+    Type: String
+    Default: dio-lab-topic
+    Description: Tópico SNS para notificações
+
+Resources:
+
+  # DynamoDB
+  ItemsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref TableNameParam
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      SSESpecification:
+        SSEEnabled: true
+
+  # SNS
+  Topic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Ref TopicNameParam
+
+  # Lambdas
+  ValidateInputFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambdas/validate_input/
+      Handler: index.handler
+      Description: Valida o payload de entrada
+
+  ProcessItemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambdas/process_item/
+      Handler: index.handler
+      Description: Simula processamento do item
+
+  NotifyUserFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambdas/notify_user/
+      Handler: index.handler
+      Description: (Opcional) Publica mensagem no SNS
+      Environment:
+        Variables:
+          TOPIC_ARN: !Ref Topic
+      Policies:
+        - Statement:
+            Effect: Allow
+            Action: sns:Publish
+            Resource: !Ref Topic
+
+  # State Machine (usa o ASL que você já subiu)
+  StateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      Name: dio-lab-workflow
+      Type: STANDARD
+      DefinitionUri: state-machines/example.asl.json
+      DefinitionSubstitutions:
+        ValidateInputLambda: !Ref ValidateInputFunction
+        ProcessItemLambda: !Ref ProcessItemFunction
+        TableName: !Ref ItemsTable
+        SnsTopicArn: !Ref Topic
+      Policies:
+        # Permissões que a State Machine precisa
+        - LambdaInvokePolicy:
+            FunctionName: !Ref ValidateInputFunction
+        - LambdaInvokePolicy:
+            FunctionName: !Ref ProcessItemFunction
+        - DynamoDBWritePolicy:
+            TableName: !Ref ItemsTable
+        - Statement:
+            Effect: Allow
+            Action: sns:Publish
+            Resource: !Ref Topic
+
+Outputs:
+  TableName:
+    Description: Nome da tabela DynamoDB
+    Value: !Ref ItemsTable
+  TopicArn:
+    Description: ARN do SNS Topic
+    Value: !Ref Topic
+  StateMachineArn:
+    Description: ARN da State Machine
+    Value: !Ref StateMachine
+  ValidateInputFunctionArn:
+    Description: ARN da Lambda de validação
+    Value: !GetAtt ValidateInputFunction.Arn
+  ProcessItemFunctionArn:
+    Description: ARN da Lambda de processamento
+    Value: !GetAtt ProcessItemFunction.Arn
+  NotifyUserFunctionArn:
+    Description: ARN da Lambda de notificação (opcional)
+    Value: !GetAtt NotifyUserFunction.Arn
